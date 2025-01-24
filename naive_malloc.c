@@ -47,7 +47,7 @@ void *naive_malloc(size_t size)
 {
 	static size_t avail_mem;
 	static void *start, *end;
-	void *ptr = NULL;
+	char *ptr = NULL;
 	size_t h_size = sizeof(size_t);
 
 	if (!start)
@@ -67,11 +67,11 @@ void *naive_malloc(size_t size)
 	else
 	{
 		while (ptr != end)
-			*(size_t *)ptr += h_size + *(size_t *)ptr;
-		*(size_t *)ptr += h_size + *(size_t *)ptr;
+			ptr += h_size + *(size_t *)ptr;
+		ptr += h_size + *(size_t *)ptr;
 		end = ptr;
 	}
 
 	*(size_t *)ptr = size;
-	return ((size_t *)ptr + h_size);
+	return (ptr + h_size);
 }
