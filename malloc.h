@@ -29,7 +29,7 @@
 #define ALIGNMENT(size) (size + (METADATA - (size % METADATA)))
 #define _MIN(x, y) (y ^ ((x ^ y) & -(x < y)))
 #define INVALID_PTR (void *)-1
-#define SBRK_CHECK(x) (x != INVALID_PTR)
+#define SBRK_CHECK(x) (x == INVALID_PTR)
 
 
 
