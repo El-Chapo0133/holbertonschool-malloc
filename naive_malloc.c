@@ -29,6 +29,7 @@ void *naive_malloc(size_t size)
 	void *ptr;
 
 	/* TODO: check if the heap can allocate size */
+
 	ptr = sbrk(size);
 	if (SBRK_CHECK(ptr))
 	{
