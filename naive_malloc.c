@@ -73,5 +73,5 @@ void *naive_malloc(size_t size)
 	}
 
 	*(size_t *)ptr = size;
-	return ((size_t *)ptr);
+	return ((size_t *)ptr + sizeof(size_t));
 }
