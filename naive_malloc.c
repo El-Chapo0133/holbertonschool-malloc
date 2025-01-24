@@ -29,8 +29,6 @@ void *naive_malloc(size_t size)
 	void *ptr;
 
 	// TODO: check if the heap can allocate size
-	if (size > 0xffffffff)
-		return (NULL);
 	ptr = sbrk(size);
 	if (!SBRK_CHECK(ptr))
 	{

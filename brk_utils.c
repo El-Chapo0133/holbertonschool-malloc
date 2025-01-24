@@ -24,7 +24,7 @@
  *
  * Return: ptr to the current break line, -1 on error
  */
-void *get_current_break()
+void *get_current_break(void)
 {
 	/**
 	 * 0 means to not move the break line

@@ -28,7 +28,10 @@
 #define HEAP_OFFSET 0x10
 #define ALIGNMENT(size) (size + (METADATA - (size % METADATA)))
 #define _MIN(x, y) (y ^ ((x ^ y) & -(x < y)))
-#define SBRK_CHECK(x) (x != (void *)-1)
+#define INVALID_PTR (void *)-1
+#define SBRK_CHECK(x) (x != INVALID_PTR)
+
+
 
 /* core functions */
 void *naive_malloc(size_t size);
@@ -36,6 +39,6 @@ void *naive_malloc(size_t size);
 /* side functions */
 
 /* utils */
-void *get_current_break();
+void *get_current_break(void);
 
 #endif
