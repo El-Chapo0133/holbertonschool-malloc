@@ -30,6 +30,7 @@ void *naive_malloc(size_t size)
 
 	// TODO: check if the heap can allocate size
 	ptr = sbrk(size);
+	fptrinf(stdout, "ptr value: %p\n", ptr);
 	if (!SBRK_CHECK(ptr))
 	{
 		fprintf(stderr, "naive_malloc sbrk error");
