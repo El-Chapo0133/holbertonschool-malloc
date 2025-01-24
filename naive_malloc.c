@@ -19,6 +19,26 @@
 #include "malloc.h"
 
 /**
+ * sbrk_one_page - first call try to sbrk
+ * @page: page number ptr
+ *
+ * Return: ptr to the first chunk
+ */
+void *sbrk_one_page(void)
+{
+	void *ptr;
+
+	ptr = sbrk(PAGE_SIZE);
+	if (SBRK_CHECK(ptr))
+	{
+		fprintf(stderr, "sbrk_one_page sbrk error\n");
+		return (NULL);
+	}
+
+	return (ptr);
+}
+
+/**
  * naive_malloc - allocate memory to store something
  * @size: size needed to be allocated for the user
  *
@@ -26,15 +46,32 @@
  */
 void *naive_malloc(size_t size)
 {
-	void *ptr;
+	static size_t avail_mem;
+	static void *start, *end;
+	void *ptr = NULL;
 
-	/* TODO: check if the heap can allocate size */
+	if (!start)
+		start = get_current_break();
+	size = ALIGN(size);
 
-	ptr = sbrk(size);
-	if (SBRK_CHECK(ptr))
+	while (avail_mem < size + METADATA)
 	{
-		fprintf(stderr, "naive_malloc sbrk error\n");
-		return (NULL);
+		if (!sbrk_one_page())
+			return (NULL);
+		avail_mem += PAGE_SIZE;
 	}
-	return (ptr);
+
+	ptr = start;
+	if (!end)
+		end = ptr;
+	else
+	{
+		do
+			*(size_t *)ptr += METADATA + *(size_t *)ptr;
+		while (ptr != end);
+		end = ptr;
+	}
+
+	*(size_t *)ptr = size;
+	return ((void *)((size_t *)ptr + METADATA));
 }

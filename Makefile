@@ -2,7 +2,7 @@ CC = gcc
 # -Werror says that sbrk is deprecated
 CFLAGS = -Wall -Wextra -pedantic -pthread -I./ -std=gnu89
 
-SRC0 = naive_malloc.c
+SRC0 = naive_malloc.c brk_utils.c
 OBJ0 = $(SRC0:.c=.o)
 NAME0 = naive_malloc
 
