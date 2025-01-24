@@ -53,6 +53,7 @@ void *naive_malloc(size_t size)
 	if (!start)
 		start = sbrk(0);
 	size = ALIGN(size);
+	printf("Aligned size: %ld\n", size);
 
 	while (avail_mem < size + h_size)
 	{
