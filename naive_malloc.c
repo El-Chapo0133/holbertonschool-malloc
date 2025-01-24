@@ -49,12 +49,13 @@ void *naive_malloc(size_t size)
 	static size_t avail_mem;
 	static void *start, *end;
 	void *ptr = NULL;
+	size_t h_size = sizeof(size_t);
 
 	if (!start)
 		start = sbrk(0);
 	size = ALIGN(size);
 
-	while (avail_mem < size + METADATA)
+	while (avail_mem < size + h_size)
 	{
 		if (!sbrk_one_page())
 			return (NULL);
@@ -67,11 +68,11 @@ void *naive_malloc(size_t size)
 	else
 	{
 		while (ptr != end)
-			*(size_t *)ptr += METADATA + *(size_t *)ptr;
-		*(size_t *)ptr += METADATA + *(size_t *)ptr;
+			*(size_t *)ptr += h_size + *(size_t *)ptr;
+		*(size_t *)ptr += h_size + *(size_t *)ptr;
 		end = ptr;
 	}
 
 	*(size_t *)ptr = size;
-	return ((size_t *)ptr + sizeof(size_t));
+	return ((size_t *)ptr + h_size));
 }
