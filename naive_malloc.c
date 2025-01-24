@@ -51,7 +51,7 @@ void *naive_malloc(size_t size)
 	void *ptr = NULL;
 
 	if (!start)
-		start = brk(0);
+		start = sbrk(0);
 	size = ALIGN(size);
 
 	while (avail_mem < size + METADATA)
