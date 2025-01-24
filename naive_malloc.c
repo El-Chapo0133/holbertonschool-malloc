@@ -20,7 +20,6 @@
 
 /**
  * sbrk_one_page - first call try to sbrk
- * @page: page number ptr
  *
  * Return: ptr to the first chunk
  */
@@ -74,5 +73,5 @@ void *naive_malloc(size_t size)
 	}
 
 	*(size_t *)ptr = size;
-	return ((size_t *)ptr + h_size);
+	return (ptr + (void *)h_size);
 }

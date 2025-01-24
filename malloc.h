@@ -27,7 +27,7 @@
 #define PAGE_SIZE 4096
 #define INVALID_PTR ((void *)-1)
 #define SBRK_CHECK(x) (x == INVALID_PTR)
-#define ALIGN(x) (x + (METADATA - (x % METADATA)))
+#define ALIGN(x) (x + (8 - (x % 8)))
 
 
 /**
