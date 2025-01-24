@@ -1,0 +1,15 @@
+*.o
+*.obj
+*.lib
+*.so
+*.dll
+*.out
+*.swp
+*.db
+*.~
+/out
+/test.c
+/test
+/naive_malloc
+/_malloc
+/_free
