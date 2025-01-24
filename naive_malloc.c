@@ -52,6 +52,7 @@ void *naive_malloc(size_t size)
 
 	if (!start)
 		start = sbrk(0);
+	size = ALIGN(size);
 
 	while (avail_mem < size + h_size)
 	{
@@ -72,5 +73,5 @@ void *naive_malloc(size_t size)
 	}
 
 	*(size_t *)ptr = size;
-	return (h_size);
+	return ((size_t *)ptr + h_size);
 }
