@@ -62,7 +62,7 @@ void *naive_malloc(size_t size)
 	}
 
 	ptr = start;
-	if (end == NULL)
+	if (!end)
 		end = ptr;
 	else
 	{
