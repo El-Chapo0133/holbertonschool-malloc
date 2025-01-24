@@ -68,13 +68,10 @@ void *naive_malloc(size_t size)
 	{
 		while (ptr != end)
 			*(size_t *)ptr += METADATA + *(size_t *)ptr;
-		if (ptr == end)
-		{
-			*(size_t *)ptr += METADATA + *(size_t *)ptr;
-			end = ptr;
-		}
+		*(size_t *)ptr += METADATA + *(size_t *)ptr;
+		end = ptr;
 	}
 
 	*(size_t *)ptr = size;
-	return ((size_t *)ptr + METADATA);
+	return ((size_t *)ptr);
 }
