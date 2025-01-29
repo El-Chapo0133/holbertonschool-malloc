@@ -32,9 +32,8 @@
 
 /**
  * struct heap_chunk_s - chunk of the heap
- * @start: ptr to the start of the heap chunk
- * @end: ptr to the end of the heap chunk
- * @next: ptr to the next heap chunk
+ * @span: distance to the next heap_chunk_t
+ * @stored: amount of bytes currently stored
  */
 typedef struct heap_chunk_s
 {

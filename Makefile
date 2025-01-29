@@ -6,6 +6,9 @@ SRC0 = naive_malloc.c brk_utils.c
 OBJ0 = $(SRC0:.c=.o)
 NAME0 = naive_malloc
 
+SRC1 = malloc.c test_malloc.c
+OBJ1 = $(SRC1:.c=.o)
+NAME1 = _malloc
 
 
 .PHONY: all clean oclean
@@ -22,6 +25,8 @@ oclean:
 naive: $(OBJ0)
 	$(CC) $(CFLAGS) $(OBJ0) -o $(NAME0)
 
+malloc: $(OBJ1)
+	$(CC) $(CFLAGS) $(OBJ1) -o $(NAME1)
 
 betty:
 	betty *.c *h
