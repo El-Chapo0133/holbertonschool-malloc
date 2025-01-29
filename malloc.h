@@ -44,6 +44,7 @@ typedef struct heap_chunk_s
 
 /* core functions */
 void *naive_malloc(size_t size);
+void *_malloc(size_t size);
 
 /* side functions */
 
