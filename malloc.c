@@ -80,7 +80,7 @@ void *_malloc(size_t size)
 				return (NULL);
 		current->span = size;
 		end = ptr + size + h_size;
-		avail_size -= (size + h_size);
+		avail_size = avail_size - size - h_size;
 	}
 	current->stored = size;
 	return (ptr + h_size);
