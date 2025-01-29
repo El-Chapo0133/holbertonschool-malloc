@@ -38,9 +38,8 @@
  */
 typedef struct heap_chunk_s
 {
-	void *start;
-	void *end;
-	struct heap_chunk_s *next;
+	size_t span;
+	size_t stored;
 } heap_chunk_t;
 
 /* core functions */
