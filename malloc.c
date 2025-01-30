@@ -17,7 +17,6 @@
  */
 
 #include "malloc.h"
-i
 
 void *FIRST_CHUNK;
 size_t AVAIL_SIZE;
@@ -51,8 +50,8 @@ void *sbrk_one_page(void)
 void *_malloc(size_t size)
 {
 	void *ptr = NULL;
-	size_t chunk_size = ALIGN(size) + METADATA;
-	size_t index, temp, prev_size, used;
+	/* size_t chunk_size = ALIGN(size) + METADATA;
+	size_t index, temp, prev_size, used; */
 
 	if (!FIRST_CHUNK)
 	{
