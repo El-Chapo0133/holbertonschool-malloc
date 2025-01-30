@@ -61,7 +61,7 @@ void *_malloc(size_t size)
 	}
 
 	ptr = FIRST_CHUNK;
-	fprintf("%d\n", chunk_size);
+	fprintf(stdout, "%d\n", chunk_size);
 
 	LEN++;
 	return ((char *)ptr + METADATA);
