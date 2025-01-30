@@ -41,6 +41,45 @@ void *sbrk_one_page(void)
 	return (ptr);
 }
 
+void sbrk_size(void *ptr, size_t chunk_avail, size_t size)
+{
+	size_t temp, final_size = 0;
+
+	temp = (LEN ? AVAIL_SIZE : PAGE_SIZE);
+	/* basically align the wanted value to the PAGE_SIZE (4097 -> 8182) */
+	/* final_size = size + (PAGE_SIZE - (size % PAGE_SIZE)); */
+	do {
+		final_size += PAGE_SIZE;
+	} while (temp + final_size < size);
+	temp += final_size;
+
+	if (SBRK_CHECK(sbrk(temp)))
+		return (NULL);
+
+	AVAILABLE = temp - chunk_avail;
+	*(size_t *)((char *)ptr + 0x8) = block;
+	return (ptr);
+}
+
+int find_free_block(void **ptr)
+{
+	size_t index, temp, prev_size, used;
+
+	for (index = 0; index < LEN; index++)
+	{
+		prev_size = *(size_t *)(*ptr);
+		temp = (*(size_t *)((char *)(*ptr) + 0x8)) - 1 + (prev_size ? 1 : 0);
+		used = (temp & 1);
+		temp = ((!prev_size && used) ? temp + 1 : temp);
+		if (prev_size && !used && prev_size >= temp)
+			return (true);
+
+		(*ptr) = (char *)(*ptr) + block_size;
+	}
+	return (false);
+}
+
+
 /**
  * _malloc - own malloc function
  * @size: size wanted
@@ -61,7 +100,11 @@ void *_malloc(size_t size)
 	}
 
 	ptr = FIRST_CHUNK;
-	fprintf(stdout, "%ld\n", chunk_size);
+	if (!find_free_block(&ptr))
+	{
+		ptr = sbrk_size(ptr, chunk_size, size);
+		(*(size_t *)((char *)ptr + 0x8))++;
+	}
 
 	LEN++;
 	return ((char *)ptr + METADATA);

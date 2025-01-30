@@ -23,6 +23,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define true 1
+#define false 0
+
 #define METADATA 0x10
 #define PAGE_SIZE 4096
 #define INVALID_PTR ((void *)-1)
