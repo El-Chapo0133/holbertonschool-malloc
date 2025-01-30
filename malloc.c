@@ -50,8 +50,8 @@ void *sbrk_one_page(void)
 void *_malloc(size_t size)
 {
 	void *ptr = NULL;
-	/* size_t chunk_size = ALIGN(size) + METADATA;
-	size_t index, temp, prev_size, used; */
+	size_t chunk_size = ALIGN(size) + METADATA;
+	/* size_t index, temp, prev_size, used; */
 
 	if (!FIRST_CHUNK)
 	{
@@ -61,7 +61,7 @@ void *_malloc(size_t size)
 	}
 
 	ptr = FIRST_CHUNK;
-	
+	fptrinf("%d\n", chunk_size);
 
 	LEN++;
 	return ((char *)ptr + METADATA);
