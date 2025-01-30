@@ -17,6 +17,11 @@
  */
 
 #include "malloc.h"
+i
+
+void *FIRST_CHUNK;
+size_t AVAIL_SIZE;
+size_t LEN;
 
 /**
  * sbrk_one_page - first call try to sbrk
@@ -45,43 +50,20 @@ void *sbrk_one_page(void)
  */
 void *_malloc(size_t size)
 {
-	static char *start, *end;
-	static size_t avail_size;
-	size_t h_size = sizeof(size_t);
-	char *ptr;
-	heap_chunk_t *current, *next;
+	void *ptr = NULL;
+	size_t chunk_size = ALIGN(size) + METADATA;
+	size_t index, temp, prev_size, used;
 
-	size = ALIGN(size);
-	if (!start)
-		start = sbrk(0), end = start;
-
-	ptr = start;
-	while (ptr < end)
+	if (!FIRST_CHUNK)
 	{
-		current = (heap_chunk_t *)ptr;
-		if (current->stored == 0)
-			break;
-		if (current->span - current->stored >= size)
-		{
-			next = (heap_chunk_t *)(ptr + current->stored + h_size);
-			next->span = current->span - current->stored - h_size;
-			current->span = current->stored;
-			ptr = (char *)next;
-			break;
-		}
-		ptr += h_size + current->span;
+		FIRST_CHUNK = sbrk_one_page();
+		if (!FIRST_CHUNK)
+			return (NULL);
 	}
 
-	current = (heap_chunk_t *)ptr;
-	if (ptr == end)
-	{
-		for (; avail_size < size + h_size; avail_size += PAGE_SIZE)
-			if (!sbrk_one_page())
-				return (NULL);
-		current->span = size;
-		end = ptr + size + h_size;
-		avail_size = avail_size - size - h_size;
-	}
-	current->stored = size;
-	return (ptr + h_size);
+	ptr = FIRST_CHUNK;
+	
+
+	LEN++;
+	return ((char *)ptr + METADATA);
 }
