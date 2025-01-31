@@ -18,10 +18,6 @@
 
 #include "malloc.h"
 
-void *FIRST_CHUNK;
-size_t AVAIL_SIZE;
-size_t LEN;
-
 /**
  * sbrk_one_page - first call try to sbrk
  *
@@ -41,31 +37,46 @@ void *sbrk_one_page(void)
 	return (ptr);
 }
 
-void sbrk_size(void *ptr, size_t chunk_avail, size_t size)
+/**
+ * sbrk_size - sbrk if the size requires it
+ * @ptr: ptr to currently allocated page
+ * @aligned_size: size to allocated aligned to METADATA
+ * @size: wanted size to allocated
+ *
+ * Return: ptr to the allocated memory
+ */
+void *sbrk_size(void *ptr, size_t aligned_size, size_t size,
+		size_t heap_counter, size_t avail_size)
 {
 	size_t temp, final_size = 0;
 
-	temp = (LEN ? AVAIL_SIZE : PAGE_SIZE);
+	temp = (heap_counter ? avail_size : PAGE_SIZE);
 	/* basically align the wanted value to the PAGE_SIZE (4097 -> 8182) */
-	/* final_size = size + (PAGE_SIZE - (size % PAGE_SIZE)); */
-	do {
+	while (temp + final_size < size)
 		final_size += PAGE_SIZE;
-	} while (temp + final_size < size);
 	temp += final_size;
 
-	if (SBRK_CHECK(sbrk(temp)))
+	/* only occurs when final_size is set, otherwise AVAIL_SIZE is enough */
+	if (final_size && SBRK_CHECK(sbrk(temp)))
 		return (NULL);
 
-	AVAILABLE = temp - chunk_avail;
-	*(size_t *)((char *)ptr + 0x8) = block;
+	avail_size = temp - aligned_size;
+	*(size_t *)((char *)ptr + 0x8) = temp;
 	return (ptr);
 }
 
-int find_free_block(void **ptr)
+/**
+ * find_free_block - try to find a free block on the heap
+ * @ptr: ptr to the first heap_chunk address
+ * move that ptr to the found chunk
+ *
+ * Return: 1 if found 0 if not
+ */
+int find_free_block(void **ptr, size_t heap_counter)
 {
 	size_t index, temp, prev_size, used;
 
-	for (index = 0; index < LEN; index++)
+	for (index = 0; index < heap_counter; index++)
 	{
 		prev_size = *(size_t *)(*ptr);
 		temp = (*(size_t *)((char *)(*ptr) + 0x8)) - 1 + (prev_size ? 1 : 0);
@@ -74,7 +85,7 @@ int find_free_block(void **ptr)
 		if (prev_size && !used && prev_size >= temp)
 			return (true);
 
-		(*ptr) = (char *)(*ptr) + block_size;
+		(*ptr) = (char *)(*ptr) + temp;
 	}
 	return (false);
 }
@@ -88,24 +99,27 @@ int find_free_block(void **ptr)
  */
 void *_malloc(size_t size)
 {
+	static void *first_heap_chunk;
+	static size_t heap_counter = 0, avail_size = 0;
 	void *ptr = NULL;
 	size_t chunk_size = ALIGN(size) + METADATA;
 	/* size_t index, temp, prev_size, used; */
 
-	if (!FIRST_CHUNK)
+	if (!first_heap_chunk)
 	{
-		FIRST_CHUNK = sbrk_one_page();
-		if (!FIRST_CHUNK)
+		first_heap_chunk = sbrk_one_page();
+		if (!first_heap_chunk)
 			return (NULL);
 	}
 
-	ptr = FIRST_CHUNK;
-	if (!find_free_block(&ptr))
+	ptr = first_heap_chunk;
+	if (!find_free_block(&ptr, heap_counter))
 	{
-		ptr = sbrk_size(ptr, chunk_size, size);
+		ptr = sbrk_size(ptr, chunk_size, size,
+				heap_counter, avail_size);
 		(*(size_t *)((char *)ptr + 0x8))++;
 	}
 
-	LEN++;
+	heap_counter++;
 	return ((char *)ptr + METADATA);
 }
