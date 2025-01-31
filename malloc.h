@@ -23,6 +23,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define true 1
+#define false 0
+
 #define METADATA 0x10
 #define PAGE_SIZE 4096
 #define INVALID_PTR ((void *)-1)
@@ -32,15 +35,13 @@
 
 /**
  * struct heap_chunk_s - chunk of the heap
- * @start: ptr to the start of the heap chunk
- * @end: ptr to the end of the heap chunk
- * @next: ptr to the next heap chunk
+ * @span: distance to the next heap_chunk_t
+ * @stored: amount of bytes currently stored
  */
 typedef struct heap_chunk_s
 {
-	void *start;
-	void *end;
-	struct heap_chunk_s *next;
+	size_t span;
+	size_t stored;
 } heap_chunk_t;
 
 /* core functions */

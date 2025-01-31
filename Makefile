@@ -6,7 +6,7 @@ SRC0 = naive_malloc.c brk_utils.c
 OBJ0 = $(SRC0:.c=.o)
 NAME0 = naive_malloc
 
-SRC1 = _malloc.c brk_utils.c
+SRC1 = malloc.c test_malloc.c
 OBJ1 = $(SRC1:.c=.o)
 NAME1 = _malloc
 
