@@ -54,6 +54,7 @@ void *naive_malloc(size_t size)
 		start = sbrk(0);
 	size = ALIGN(size);
 
+	/* sbrk one more page */
 	while (avail_mem < size + h_size)
 	{
 		if (!sbrk_one_page())
@@ -61,6 +62,7 @@ void *naive_malloc(size_t size)
 		avail_mem += PAGE_SIZE;
 	}
 
+	/* update end ptr */
 	ptr = start;
 	if (!end)
 		end = ptr;

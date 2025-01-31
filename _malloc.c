@@ -1,12 +1,12 @@
 /*
  * ==========================================================================
  *
- *       Filename:  utils.c
+ *       Filename:  _malloc.c
  *
- *    Description:  utils
+ *    Description:  malloc re-write
  *
  *        Version:  1.0
- *        Created:  24.01.2025 09:40:01
+ *        Created:  24.01.2025 15:14:30
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -15,5 +15,17 @@
  *
  * ==========================================================================
  */
-#include <stdlib.h>
 
+#include "malloc.h"
+
+
+/**
+ * _malloc - re-writed malloc
+ * @size: asked size
+ *
+ * Return: ptr to newly allocated memory
+ */
+void *_malloc(size_t size)
+{
+	
+}
