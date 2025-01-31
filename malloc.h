@@ -27,6 +27,7 @@
 #define false 0
 
 #define METADATA 0x10
+#define METADATA_USED 0x8
 #define PAGE_SIZE 4096
 #define INVALID_PTR ((void *)-1)
 #define SBRK_CHECK(x) (x == INVALID_PTR)

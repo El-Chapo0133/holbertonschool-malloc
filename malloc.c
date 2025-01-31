@@ -63,8 +63,9 @@ void *sbrk_size(void *ptr, size_t aligned_size, size_t size,
 		return (NULL);
 
 	avail_size = temp - aligned_size;
+	fprintf(stdout, "%ld\n", avail_size);
 	/* set the temp value on the ptr chunk */
-	*(size_t *)((char *)ptr + 0x8) = temp;
+	*(size_t *)((char *)ptr + METADATA_USED) = temp;
 	return (ptr);
 }
 
@@ -85,7 +86,7 @@ int find_free_block(void **ptr, size_t heap_counter)
 	{
 		/* if the chunk is not used and has enough size */
 		prev_size = *(size_t *)(*ptr);
-		temp = (*(size_t *)((char *)(*ptr) + 0x8)) - 1 + (prev_size ? 1 : 0);
+		temp = (*(size_t *)((char *)(*ptr) + METADATA_USED)) - 1 + (prev_size ? 1 : 0);
 		used = (temp & 1);
 		temp = ((!prev_size && used) ? temp + 1 : temp);
 		if (prev_size && !used && prev_size >= temp)
@@ -128,7 +129,7 @@ void *_malloc(size_t size)
 		ptr = sbrk_size(ptr, chunk_size, size,
 				heap_counter, avail_size);
 		/* indicate that the chunk on the ptr is used */
-		(*(size_t *)((char *)ptr + 0x8))++;
+		(*(size_t *)((char *)ptr + METADATA_USED))++;
 	}
 
 	heap_counter++;
