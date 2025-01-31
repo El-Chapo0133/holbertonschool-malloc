@@ -50,16 +50,16 @@ void *sbrk_one_page(void)
 void *sbrk_size(void *ptr, size_t aligned_size, size_t size,
 		size_t heap_counter, size_t avail_size)
 {
-	size_t temp, final_size = 0;
+	size_t temp, adder_size = 0;
 
 	temp = (heap_counter ? avail_size : PAGE_SIZE);
-	/* basically align the wanted value to the PAGE_SIZE (4097 -> 8182) */
-	while (temp + final_size < size)
-		final_size += PAGE_SIZE;
-	temp += final_size;
+	/* add pages when the size to bigger than the available size */ 
+	while (temp + adder_size < size)
+		adder_size += PAGE_SIZE;
+	temp += adder_size;
 
-	/* only occurs when final_size is set, otherwise AVAIL_SIZE is enough */
-	if (final_size && SBRK_CHECK(sbrk(temp)))
+	/* only occurs when adder_size is set, otherwise AVAIL_SIZE is enough */
+	if (adder_size && SBRK_CHECK(sbrk(temp)))
 		return (NULL);
 
 	avail_size = temp - aligned_size;
