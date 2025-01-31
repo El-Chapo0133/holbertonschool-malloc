@@ -42,6 +42,8 @@ void *sbrk_one_page(void)
  * @ptr: ptr to currently allocated page
  * @aligned_size: size to allocated aligned to METADATA
  * @size: wanted size to allocated
+ * @heap_counter: counter of heap chunks
+ * @avail_size: counter of available size
  *
  * Return: ptr to the allocated memory
  */
@@ -70,6 +72,7 @@ void *sbrk_size(void *ptr, size_t aligned_size, size_t size,
  * find_free_block - try to find a free block on the heap
  * @ptr: ptr to the first heap_chunk address
  * move that ptr to the found chunk
+ * @heap_counter: counter of heap chunks
  *
  * Return: 1 if found 0 if not
  */
@@ -106,7 +109,7 @@ void *_malloc(size_t size)
 	/* ptr to the first chunk on the heap */
 	static void *first_heap_chunk;
 	/* counter of the chunks and available size */
-	static size_t heap_counter = 0, avail_size = 0;
+	static size_t heap_counter, avail_size;
 	void *ptr = NULL;
 	size_t chunk_size = ALIGN(size) + METADATA;
 
