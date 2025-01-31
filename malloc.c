@@ -113,6 +113,7 @@ void *_malloc(size_t size)
 	void *ptr = NULL;
 	size_t chunk_size = ALIGN(size) + METADATA;
 
+	/* first call, must sbrk one page */
 	if (!first_heap_chunk)
 	{
 		first_heap_chunk = sbrk_one_page();
@@ -120,6 +121,7 @@ void *_malloc(size_t size)
 			return (NULL);
 	}
 
+	/* next calls, look for a free chunk, if not found allocate new page */
 	ptr = first_heap_chunk;
 	if (!find_free_block(&ptr, heap_counter))
 	{
