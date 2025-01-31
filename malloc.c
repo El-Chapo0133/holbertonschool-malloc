@@ -61,6 +61,7 @@ void *sbrk_size(void *ptr, size_t aligned_size, size_t size,
 		return (NULL);
 
 	avail_size = temp - aligned_size;
+	/* set the temp value on the ptr chunk */
 	*(size_t *)((char *)ptr + 0x8) = temp;
 	return (ptr);
 }
@@ -76,8 +77,10 @@ int find_free_block(void **ptr, size_t heap_counter)
 {
 	size_t index, temp, prev_size, used;
 
+	/* loop over all chunks */
 	for (index = 0; index < heap_counter; index++)
 	{
+		/* if the chunk is not used and has enough size */
 		prev_size = *(size_t *)(*ptr);
 		temp = (*(size_t *)((char *)(*ptr) + 0x8)) - 1 + (prev_size ? 1 : 0);
 		used = (temp & 1);
@@ -85,6 +88,7 @@ int find_free_block(void **ptr, size_t heap_counter)
 		if (prev_size && !used && prev_size >= temp)
 			return (true);
 
+		/* move ptr to the next chunk */
 		(*ptr) = (char *)(*ptr) + temp;
 	}
 	return (false);
@@ -99,11 +103,12 @@ int find_free_block(void **ptr, size_t heap_counter)
  */
 void *_malloc(size_t size)
 {
+	/* ptr to the first chunk on the heap */
 	static void *first_heap_chunk;
+	/* counter of the chunks and available size */
 	static size_t heap_counter = 0, avail_size = 0;
 	void *ptr = NULL;
 	size_t chunk_size = ALIGN(size) + METADATA;
-	/* size_t index, temp, prev_size, used; */
 
 	if (!first_heap_chunk)
 	{
@@ -117,6 +122,7 @@ void *_malloc(size_t size)
 	{
 		ptr = sbrk_size(ptr, chunk_size, size,
 				heap_counter, avail_size);
+		/* indicate that the chunk on the ptr is used */
 		(*(size_t *)((char *)ptr + 0x8))++;
 	}
 
