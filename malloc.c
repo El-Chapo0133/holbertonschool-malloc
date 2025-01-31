@@ -48,11 +48,11 @@ void *sbrk_one_page(void)
  * Return: ptr to the allocated memory
  */
 void *sbrk_size(void *ptr, size_t aligned_size, size_t size,
-		size_t heap_counter, size_t avail_size)
+		size_t heap_counter, size_t *avail_size)
 {
 	size_t temp, adder_size = 0;
 
-	temp = (heap_counter ? avail_size : PAGE_SIZE);
+	temp = (heap_counter ? (*avail_size) : PAGE_SIZE);
 	/* add pages when the size to bigger than the available size */ 
 	while (temp + adder_size < size)
 		adder_size += PAGE_SIZE;
@@ -62,7 +62,7 @@ void *sbrk_size(void *ptr, size_t aligned_size, size_t size,
 	if (adder_size && SBRK_CHECK(sbrk(temp)))
 		return (NULL);
 
-	avail_size = temp - aligned_size;
+	(*avail_size) = temp - aligned_size;
 	/* set the temp value on the ptr chunk */
 	*(size_t *)((char *)ptr + 0x8) = temp;
 	return (ptr);
@@ -126,7 +126,7 @@ void *_malloc(size_t size)
 	if (!find_free_block(&ptr, heap_counter))
 	{
 		ptr = sbrk_size(ptr, chunk_size, size,
-				heap_counter, avail_size);
+				heap_counter, &avail_size);
 		/* indicate that the chunk on the ptr is used */
 		(*(size_t *)((char *)ptr + 0x8))++;
 	}
