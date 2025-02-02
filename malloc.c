@@ -1,137 +1,124 @@
-/*
- * ==========================================================================
- *
- *       Filename:  malloc.c
- *
- *    Description:  own malloc function that allocates space in the heap
- *
- *        Version:  1.0
- *        Created:  01/29/2025 01:27:26 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Loris Leveque (9601@holbertonstudent.com)
- *   Organization:  Holberton
- *
- * ==========================================================================
- */
-
 #include "malloc.h"
 
-/**
- * sbrk_one_page - first call try to sbrk
- *
- * Return: ptr to the first chunk
- */
-void *sbrk_one_page(void)
-{
-	void *ptr;
+static heap_info heap;
 
-	ptr = sbrk(PAGE_SIZE);
-	if (SBRK_CHECK(ptr))
-	{
-		fprintf(stderr, "sbrk_one_page sbrk error\n");
+/**
+ * add_header - header info add
+ * @addr: hader of the address
+ * @size: size of the memory block
+ * @prev: previous chunk offset
+ */
+void add_header(void *addr, size_t size, size_t prev)
+{
+	block_info *block = NULL;
+
+	block = addr;
+	block->size = prev ? size + HDR_SZ + 1 : size + HDR_SZ;
+	block->prev = prev;
+}
+
+/**
+ * addNewPage - use sbrk()
+ * @size: size needed by user
+ * Return: pointer to memory block header
+ */
+void *addNewPage(size_t size)
+{
+	size_t pg_sz;
+	char *p = NULL, *tmp = NULL;
+
+	pg_sz = 2 * HDR_SZ + MIN_SIZE + size;
+	pg_sz += heap.heap_start ? 0 : HDR_SZ;
+	pg_sz = align_up(pg_sz, PAGESIZE);
+	p = sbrk(pg_sz);
+	if (p == (void *)-1 && errno == ENOMEM)
 		return (NULL);
+	if (heap.heap_start == NULL)
+	{
+		/* Calling addNewPage() for the first time */
+		heap.heap_start = p;
+		/* Set the first chunk, returned to USER */
+		add_header(p, size, 0);
+		/* Set middle and sentinel chunks */
+		add_header(p + GET_SIZE(p), pg_sz - size - 3 * HDR_SZ, 0);
+		add_header(p + pg_sz - HDR_SZ, 0, pg_sz - size - 2 * HDR_SZ);
+		return (p);
 	}
-
-	return (ptr);
+	else
+	{
+		/*
+		 * Subsequent calls to addNewPage()
+		 * Make p point to sentinel chunk (block) and convert
+		 * that sentinel to regular chunk, which will be returned to
+		 * a user
+		 */
+		p -= HDR_SZ;
+		tmp = p;
+		/* Change previous sentinel chunk, returned to USER */
+		add_header(p, size, GET_PREV(p));
+		p += GET_SIZE(p);
+		add_header(p, pg_sz - size - 2 * HDR_SZ, 0);
+		add_header(p + GET_SIZE(p), 0, pg_sz - size - HDR_SZ);
+		return (tmp);
+	}
 }
 
 /**
- * sbrk_size - sbrk if the size requires it
- * @ptr: ptr to currently allocated page
- * @aligned_size: size to allocated aligned to METADATA
- * @size: wanted size to allocated
- * @heap_counter: counter of heap chunks
- * @avail_size: counter of available size
- *
- * Return: ptr to the allocated memory
+ * find_block - find an unused memory block to return to a user
+ * @size: size needed by a user
+ * Return: pointer to a memory block header
  */
-void *sbrk_size(void *ptr, size_t aligned_size, size_t size,
-		size_t heap_counter, size_t avail_size)
+void *find_block(size_t size)
 {
-	size_t temp, adder_size = 0;
+	char *p = heap.heap_start, *tmp;
+	size_t req_sz = size + HDR_SZ;
 
-	temp = (heap_counter ? avail_size : PAGE_SIZE);
-	/* add pages when the size to bigger than the available size */ 
-	while (temp + adder_size < size)
-		adder_size += PAGE_SIZE;
-	temp += adder_size;
-
-	/* only occurs when adder_size is set, otherwise AVAIL_SIZE is enough */
-	if (adder_size && SBRK_CHECK(sbrk(temp)))
+	if (!p)
 		return (NULL);
 
-	avail_size = temp - aligned_size;
-	fprintf(stdout, "%ld\n", avail_size);
-	/* set the temp value on the ptr chunk */
-	*(size_t *)((char *)ptr + METADATA_USED) = temp;
-	return (ptr);
-}
-
-/**
- * find_free_block - try to find a free block on the heap
- * @ptr: ptr to the first heap_chunk address
- * move that ptr to the found chunk
- * @heap_counter: counter of heap chunks
- *
- * Return: 1 if found 0 if not
- */
-int find_free_block(void **ptr, size_t heap_counter)
-{
-	size_t index, temp, prev_size, used;
-
-	/* loop over all chunks */
-	for (index = 0; index < heap_counter; index++)
+	while (GET_SIZE(p) >= HDR_SZ + MIN_SIZE)
 	{
-		/* if the chunk is not used and has enough size */
-		prev_size = *(size_t *)(*ptr);
-		temp = (*(size_t *)((char *)(*ptr) + METADATA_USED)) - 1 + (prev_size ? 1 : 0);
-		used = (temp & 1);
-		temp = ((!prev_size && used) ? temp + 1 : temp);
-		if (prev_size && !used && prev_size >= temp)
-			return (true);
+		p += GET_SIZE(p);
+		if ((_GET_SIZE(p) & 1) && GET_SIZE(p - GET_PREV(p)) >= req_sz)
+		{
+			tmp = p - GET_PREV(p);
+			if (GET_SIZE(tmp) >= req_sz + HDR_SZ + MIN_SIZE)
+			{
+				/* Split the chunk */
+				add_header(tmp + req_sz, GET_SIZE(tmp) - req_sz - HDR_SZ, 0);
+				((block_info *)tmp)->size = req_sz;
+				((block_info *)p)->prev = GET_SIZE(tmp + req_sz);
+			}
+			else
+			{
+				/* Don't split the chunk */
+				((block_info *)p)->size &= LSB_ZERO_MASK;
+				((block_info *)p)->prev = 0;
+			}
 
-		/* move ptr to the next chunk */
-		(*ptr) = (char *)(*ptr) + temp;
+			return (tmp);
+		}
 	}
-	return (false);
+	return (NULL);
 }
 
-
 /**
- * _malloc - own malloc function
- * @size: size wanted
- *
- * Return: ptr to allocated memory
+ * _malloc - malloc function implementation
+ * @size: size need by a user
+ * Return: a pointer to heap with at least @size usable memory,
+ * NULL on failure or when @size is 0
  */
 void *_malloc(size_t size)
 {
-	/* ptr to the first chunk on the heap */
-	static void *first_heap_chunk;
-	/* counter of the chunks and available size */
-	static size_t heap_counter, avail_size;
-	void *ptr = NULL;
-	size_t chunk_size = ALIGN(size) + METADATA;
+	char *p;
 
-	/* first call, must sbrk one page */
-	if (!first_heap_chunk)
-	{
-		first_heap_chunk = sbrk_one_page();
-		if (!first_heap_chunk)
-			return (NULL);
-	}
-
-	/* next calls, look for a free chunk, if not found allocate new page */
-	ptr = first_heap_chunk;
-	if (!find_free_block(&ptr, heap_counter))
-	{
-		ptr = sbrk_size(ptr, chunk_size, size,
-				heap_counter, avail_size);
-		/* indicate that the chunk on the ptr is used */
-		(*(size_t *)((char *)ptr + METADATA_USED))++;
-	}
-
-	heap_counter++;
-	return ((char *)ptr + METADATA);
+	size = align_up(size, ALIGNMENT);
+	if (size == 0)
+		return (NULL);
+	p = find_block(size);
+	if (!p)
+		p = addNewPage(size);
+	if (!p)
+		return (NULL);
+	return (p + HDR_SZ);
 }
