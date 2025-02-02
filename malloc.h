@@ -47,6 +47,10 @@
 #define GET_SIZE(p) ((((block_info *)(p))->size) & LSB_ZERO_MASK)
 #define GET_PREV(p) ((((block_info *)(p))->prev) & LSB_ZERO_MASK)
 
+#include <errno.h>
+#include <signal.h>
+#include <sys/types.h>
+
 /**
  * struct heap_info_s - stores info about heap
  * @heap_start: start of heap
